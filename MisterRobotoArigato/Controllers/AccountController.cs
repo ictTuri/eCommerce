@@ -102,8 +102,7 @@ namespace MisterRobotoArigato.Controllers
                     //send a welcome email to new users
                     await _emailSender.SendEmailAsync(user.Email, "Welcome",
                         "<h1>Thank you for registering!</h1>" +
-                        "<h4>Mister Roboto Arigato is the <i>bestest store</i>!!!</h4>" +
-                        "<h4>We hope to fulfill all your <u>robotic</u> needs!</h4>");
+                        "<h4>We hope to fulfill all your needs!</h4>");
                     return RedirectToAction("Index", "Home");
                 }
                 else {
