@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using MisterRobotoArigato.Models;
 using MisterRobotoArigato.Models.ViewModel;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -70,8 +71,7 @@ namespace MisterRobotoArigato.Controllers
                 //creates user in the database
                 var result = await _userManager.CreateAsync(user, rvm.Password);
 
-                if (result.Succeeded)
-                {
+                if (result.Succeeded) {
                     //capturing the user's name
                     Claim nameClaim = new Claim("FullName", $"{user.FirstName} {user.LastName}");
                     Claim firstNameClaim = new Claim("FirstName", $"{user.FirstName}");
@@ -89,13 +89,11 @@ namespace MisterRobotoArigato.Controllers
                     await _userManager.AddClaimsAsync(user, claims);
 
                     //assign roles
-                    if (user.Email == "doge@gmail.com" || user.Email == "ecaoile@my.hpu.edu")
-                    {
+                    if (user.Email == "doge@gmail.com" || user.Email == "ecaoile@my.hpu.edu") {
                         await _userManager.AddToRoleAsync(user, ApplicationRoles.Member);
                         await _userManager.AddToRoleAsync(user, ApplicationRoles.Admin);
                     }
-                    else
-                    {
+                    else {
                         await _userManager.AddToRoleAsync(user, ApplicationRoles.Member);
                     }
 
@@ -108,9 +106,23 @@ namespace MisterRobotoArigato.Controllers
                         "<h4>We hope to fulfill all your <u>robotic</u> needs!</h4>");
                     return RedirectToAction("Index", "Home");
                 }
-                else
-                {
-                    ModelState.AddModelError("Email", "This email already registered!");
+                else {
+                    var error = result.Errors.ToList(); //convert to list
+                    //iterojme ne cdo error
+                    foreach (var err in error) 
+                    {
+                        //kontrollojme nese eshte per password ose per email dhe e vendosim ne state
+                        if (err.Code.Contains("Password")) {
+                            ModelState.AddModelError("Password", err.Description);
+                        } else if (err.Code.Contains("Email") || err.Code.Contains("DuplicateUserName")) {
+                            ModelState.AddModelError("Email", err.Description);
+
+                        }
+                        //errList += string.Join(", ", err.Description);
+                    }
+                    
+                   // ModelState.AddModelError("Email", "This email already registered!");
+
                     return View(rvm);
                 }
               
